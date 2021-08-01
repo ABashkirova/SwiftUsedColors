@@ -30,6 +30,13 @@ let targetOption = StringOption(
 )
 cli.addOption(targetOption)
 
+let reportOption = StringOption(
+    shortFlag: "r",
+    longFlag: "report",
+    helpMessage: "Directory for reports with project colors."
+)
+cli.addOption(reportOption)
+
 do {
     try cli.parse()
 }
@@ -98,11 +105,33 @@ else {
     sourceRoot = project.parent()
 }
 
+// MARK: Report
+
+let reportPath: Path?
+if let optReport = reportOption.value {
+    let path = Path(optReport)
+    if !path.exists {
+        cli.printUsage(AppError.Report.reportDirectoryIsNotFound.message(path))
+        reportPath = nil
+    }
+    else if !path.isDirectory {
+        cli.printUsage(AppError.Report.reportIsNotDirectory.message(path))
+        reportPath = nil
+    }
+    else {
+        reportPath = path
+    }
+}
+else {
+    reportPath = nil
+}
+
 do {
     try Explorer(
         projectPath: project,
         sourceRoot: sourceRoot,
         target: target,
+        reportPath: reportPath,
         showWarnings: showWarnings
     ).explore()
 }

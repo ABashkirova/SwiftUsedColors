@@ -17,6 +17,11 @@ enum AppError {
         case projectIsNotDirectory
         case projectWrongExtension
     }
+    
+    enum Report {
+        case reportIsNotDirectory
+        case reportDirectoryIsNotFound
+    }
 }
 
 extension AppError {
@@ -25,6 +30,17 @@ extension AppError {
         case .processingFailed:
             return "❌ Processing failed: \(error)"
 
+        }
+    }
+}
+
+extension AppError.Report {
+    func message(_ report: Path? = nil) -> String {
+        switch self {
+        case .reportDirectoryIsNotFound:
+            return "Wrong report directory specified: \(String(describing: report)) not found"
+        case .reportIsNotDirectory:
+            return "Wrong report directory specified: \(String(describing: report)) is not directory"
         }
     }
 }

@@ -31,17 +31,25 @@ enum ExploreUsage {
 class Explorer {
     private let projectPath: Path
     private let sourceRoot: Path
+    private let reportPath: Path?
     private let target: String?
     private let showWarnings: Bool
     private var exploredResources: [ExploreResource] = []
     private var exploredUsages: [ExploreUsage] = []
     private var projectColors: [ProjectColor] = []
     
-    init(projectPath: Path, sourceRoot: Path, target: String?, showWarnings: Bool) throws {
+    init(
+        projectPath: Path,
+        sourceRoot: Path,
+        target: String?,
+        reportPath: Path?,
+        showWarnings: Bool
+    ) throws {
         self.projectPath = projectPath
         self.sourceRoot = sourceRoot
         self.target = target
         self.showWarnings = showWarnings
+        self.reportPath = reportPath
     }
     
     func explore() throws {
@@ -311,7 +319,10 @@ class Explorer {
     // MARK: - Generate reports
     
     private func writeUsedColors() {
-        let resultJson = projectPath.parent() + Path("colors.json")
+        guard let reportPath = reportPath else {
+            return
+        }
+        let resultJson = reportPath + Path("colors.json")
         let data = try? JSONEncoder().encode(projectColors)
         guard let data = data else {
             print("Json report not generated".red)
