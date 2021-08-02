@@ -323,7 +323,7 @@ class Explorer {
             return
         }
         let resultJson = reportPath + Path("colors.json")
-        let data = try? JSONEncoder().encode(projectColors)
+        let data = try? JSONEncoder().encode(projectColors.sorted(by: { $0.sortRelation(color: $1) }))
         guard let data = data else {
             print("Json report not generated".red)
             return
