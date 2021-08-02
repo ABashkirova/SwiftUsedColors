@@ -75,7 +75,7 @@ extension ProjectColor.Color {
             var normValue = Int(hsv.value * Float(countOfColorsCluster))
             
             if normHue % 2 == 1 {
-                normValue = countOfColorsCluster - v2
+                normValue = countOfColorsCluster - normValue
                 normLum = countOfColorsCluster - normLum
             }
             return (normHue: normHue, normLum: normLum, normValue: normValue)
