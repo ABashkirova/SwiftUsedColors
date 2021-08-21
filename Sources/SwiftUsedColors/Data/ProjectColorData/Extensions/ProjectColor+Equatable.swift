@@ -49,6 +49,22 @@ extension ProjectColor.ColorRepresentation: Equatable {
         
         case (.asset(let lhsColor), .asset(let rhsColor)):
             return lhsColor == rhsColor
+        
+        case (.custom(let lhsColor), .asset(let rhsColor)):
+            if case .any(let rhsColor) = rhsColor {
+                return lhsColor == rhsColor
+            }
+            else {
+                return false
+            }
+            
+        case (.asset(let lhsColor), .custom(let rhsColor)):
+            if case .any(let lhsColor) = lhsColor {
+                return lhsColor == rhsColor
+            }
+            else {
+                return false
+            }
             
         default:
             return false

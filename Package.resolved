@@ -29,6 +29,15 @@
         }
       },
       {
+        "package": "HyperSwift",
+        "repositoryURL": "https://github.com/johngarrett/HyperSwift",
+        "state": {
+          "branch": "master",
+          "revision": "f73e3c889ea4f2e552a3d8cf63a6c4946cfab115",
+          "version": null
+        }
+      },
+      {
         "package": "IBDecodable",
         "repositoryURL": "https://github.com/IBDecodable/IBDecodable.git",
         "state": {

@@ -14,6 +14,13 @@ extension ProjectColor {
         case rgb(red: Float, green: Float, blue: Float, alpha: Float)
         case grayGamma(white: Float, alpha: Float)
         
+        var alpha: Double {
+            switch self {
+            case .rgb(_, _, _, let alpha), .grayGamma(_, let alpha):
+                return Double(alpha)
+            }
+        }
+        
         var rgb: (r: Float, g: Float, b: Float) {
             switch self {
             case .grayGamma(let white, _):

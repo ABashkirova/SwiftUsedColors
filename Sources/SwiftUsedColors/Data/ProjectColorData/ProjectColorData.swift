@@ -19,8 +19,23 @@ struct ProjectColor: Codable {
     var usedInFiles: [Path]?
     
     /// Hex representation
-    var hex: String? {
-        colorRepresentation?.hex
+    func hex(isLightMode: Bool) -> String? {
+        colorRepresentation?.hex(isLightMode: isLightMode)
+    }
+    
+    /// Contains in Asset directory
+    var isAsset: Bool {
+        usedInFiles?.contains(where: { $0.extension == "colorset" }) ?? false
+    }
+    
+    /// Found in code
+    var isUsedInCode: Bool {
+        !isAsset && usedInFiles?.contains(where: { $0.extension == "swift" }) ?? false
+    }
+    
+    /// Found in layout
+    var isUsedInXib: Bool {
+        return !isAsset && usedInFiles?.contains(where: { $0.extension == "xib" }) ?? false
     }
     
     func equalColors(with color: ProjectColor) -> Bool {

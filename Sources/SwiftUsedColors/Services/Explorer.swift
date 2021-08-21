@@ -6,6 +6,7 @@ import Foundation
 import PathKit
 import XcodeProj
 import Glob
+import HyperSwift
 
 enum ExploreError: Error {
     case notFound(message: String)
@@ -322,14 +323,8 @@ class Explorer {
         guard let reportPath = reportPath else {
             return
         }
-        let resultJson = reportPath + Path("colors.json")
-        let data = try? JSONEncoder().encode(projectColors.sorted(by: { $0.sortRelation(color: $1) }))
-        guard let data = data else {
-            print("Json report not generated".red)
-            return
-        }
-        try? resultJson.write(data)
-        print("Colors.json:\n", resultJson.absolute().string)
+        let resultHtml = reportPath + Path("colors.html")
+        try? resultHtml.write(ProjectColorsPage(colors: projectColors.sorted(by: { $0.sortRelation(color: $1) })).render())
+        print("colors.html:\n", resultHtml.absolute().string)
     }
-    
 }

@@ -13,7 +13,6 @@ extension ProjectColor {
         case colorRepresentation
         case names
         case files
-        case hex
     }
     
     init(from decoder: Decoder) throws {
@@ -35,9 +34,6 @@ extension ProjectColor {
             }
             if let usedInFiles = usedInFiles {
                 try container.encode(usedInFiles.map { $0.lastComponent } , forKey: .files)
-            }
-            if let hex = hex {
-                try container.encode(hex, forKey: .hex)
             }
         }
     }

@@ -10,7 +10,7 @@ import Foundation
 extension ProjectColor.ColorRepresentation {
     
     /// Hex representation
-    var hex: String? {
+    func hex(isLightMode: Bool) -> String? {
         switch self {
         case .system(let name, _):
             guard let light = ProjectColor.ColorRepresentation.lightSystemHex[name],
@@ -18,7 +18,7 @@ extension ProjectColor.ColorRepresentation {
             else {
                 return nil
             }
-            return "\(light) – \(dark)"
+            return isLightMode ? light : dark
             
         case .custom(let color):
             return color.hex
@@ -31,7 +31,7 @@ extension ProjectColor.ColorRepresentation {
             case .anyDark(let light, let dark):
                 switch (light, dark) {
                 case (.rgb, .rgb):
-                    return "\(light.hex ?? "nil") - \(dark.hex ?? "nil")"
+                    return isLightMode ? light.hex : dark.hex
                 
                 default:
                     return nil
@@ -146,8 +146,15 @@ extension ProjectColor.Color {
                 UInt8(blue * 255),
                 alpha
             )
-        case .grayGamma:
-            return nil
+            
+        case .grayGamma(let white, let alpha):
+            return String(
+                format: "#%02X%02X%02X %.02f",
+                UInt8(white * 255),
+                UInt8(white * 255),
+                UInt8(white * 255),
+                alpha
+            )
         }
     }
 }
