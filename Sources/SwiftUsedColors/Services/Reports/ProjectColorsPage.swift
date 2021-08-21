@@ -68,50 +68,129 @@ public class Head {
 
 private extension ProjectColor {
     var infoCard: HTMLComponent {
-        let colorBlock = Div("col-sm-4 align-self-center") {
-            colorRepresentation?.colorsCard ?? Div()
-        }
-        let nameBlock = Div("col-md-3") {
-            Div(cssClass: "card-body", id: nil, attributes: [:], children: [
-                Header(.h6, text: "Names:", cssClass: "card-title", attributes: [:]),
-                Paragraph("card-text") {
-                    Small {
-                        names?.joined(separator: ", ") ?? ""
-                    }
-                }
-            ])
-        }
-        let filesBlock = Div("col-md-3") {
-            Div(cssClass: "card-body", id: nil, attributes: [:], children: [
-                Header(.h6, text: "Files:", cssClass: "card-title", attributes: [:]),
-                Paragraph("card-text") {
-                    Small {
-                        usedInFiles?.compactMap { $0.lastComponent }.joined(separator: ", ") ?? ""
-                    }
-                }
-            ])
-        }
-        let assetBadge = RawHTML("<span class=\"badge rounded-pill bg-success\">In Asset</span>")
-        let xibBadge = RawHTML("<span class=\"badge rounded-pill bg-danger\">In Xib</span>")
-        let swiftBadge = RawHTML("<span class=\"badge rounded-pill bg-warning\">In Code</span>")
-        
-        var childBlocks: [HTMLElement] = [colorBlock, nameBlock, filesBlock]
-        if isAsset {
-            childBlocks.append(Div("col-md-1 align-self-top") { assetBadge })
-        }
-        else {
-            if isUsedInCode  {
-                childBlocks.append(Div("col-md-1 align-self-top") { swiftBadge })
-            }
-            if isUsedInXib {
-                childBlocks.append(Div("col-md-1 align-self-top") { xibBadge })
-            }
-        }
         return Div("card mb-4") {
             Div("row g-0", id: nil, attributes: [:]) {
-                return childBlocks
+                [colorBlock, namesAndKeysBlock, filesBlock, badgesBlock]
             }
         }
+    }
+    
+    private var badgesBlock: HTMLElement {
+        let badges: [HTMLElement] = [assetBadge, unusedBadge, xibBadge, codeBadge, dublicateBadge].compactMap { $0 }
+        return Div(cssClass: "col-md-1 align-self-center", children: badges)
+    }
+    
+    private var namesAndKeysBlock: HTMLElement {
+        return Div("col-md-3") {
+            Div(cssClass: "card-body", id: nil, attributes: [:], children: [
+                Header(.h6, text: "Names:", cssClass: "card-title", attributes: [:]),
+                namesComponent,
+                keysComponent
+            ].compactMap { $0 })
+        }
+    }
+    
+    private var colorBlock: HTMLComponent {
+        return Div("col-sm-3 align-self-center") {
+            colorRepresentation?.colorsCard ?? Div()
+        }
+    }
+    
+    private var filesBlock: HTMLComponent {
+        return Div("col-md-3") {
+            Div(cssClass: "card-body", id: nil, attributes: [:], children: [
+                Header(.h6, text: "Files:", cssClass: "card-title", attributes: [:]),
+                filesComponent
+            ])
+        }
+    }
+    
+    private var namesComponent: HTMLComponent {
+        let namesComponent: HTMLComponent
+        if let names = names, !names.isEmpty {
+            namesComponent = Paragraph("card-text") {
+                Small { names.filter { !$0.contains("#") }.joined(separator: ", ") }
+            }
+        }
+        else {
+            namesComponent = Paragraph(cssClass: "card-text", " – ")
+        }
+        return namesComponent
+    }
+    
+    private var keysComponent: HTMLComponent? {
+        var keysComponent: HTMLComponent?
+        if let keys = keys, !keys.isEmpty {
+            keysComponent = Div {
+                Header(.h6, text: "Keys:", cssClass: "card-title", attributes: [:])
+                Paragraph("card-text") {
+                    Small { keys.joined(separator: ", ") }
+                }
+            }
+        }
+        return keysComponent
+    }
+    
+    private var filesComponent: HTMLComponent {
+        let filesComponent: HTMLComponent
+        if let usedInFiles = usedInFiles, !usedInFiles.isEmpty {
+            filesComponent = Paragraph("card-text") {
+                Small { usedInFiles.map { $0.lastComponent }.joined(separator: ", ") }
+            }
+        }
+        else {
+            filesComponent = Paragraph(cssClass: "card-text", " – ")
+        }
+        return filesComponent
+    }
+    
+    private var assetBadge: HTMLElement? {
+        guard isAsset else {
+            return nil
+        }
+        return ColorBadge("In Asset", type: .success).element
+    }
+    
+    private var unusedBadge: HTMLElement? {
+        guard isUnused else {
+            return nil
+        }
+        return ColorBadge("Unused", type: .danger).element
+    }
+    
+    private var xibBadge: HTMLElement? {
+        guard isUsedInXib else {
+            return nil
+        }
+        return ColorBadge("In Xib", type: .warning).element
+    }
+    
+    private var codeBadge: HTMLElement? {
+        guard isUsedInCode else {
+            return nil
+        }
+        return ColorBadge("In Code", type: .warning).element
+    }
+    
+    private var dublicateBadge: HTMLElement? {
+        guard isDuplicate else {
+            return nil
+        }
+        return ColorBadge("Dublicate", type: .danger).element
+    }
+}
+
+private class ColorBadge {
+    enum BadgeType: String {
+        case success
+        case danger
+        case warning
+    }
+    
+    let element: RawHTML
+    
+    init(_ text: String, type: BadgeType) {
+        self.element = RawHTML("<span class=\"badge rounded-pill bg-\(type.rawValue)\">\(text)</span>")
     }
 }
 
@@ -187,7 +266,6 @@ private class ColorCard: HTMLComponent {
         }
         .width(110)
         .height(110)
-        .margin(top: 0, right: isLight ? 0 : 50, bottom: 0, left: isLight ? 50 : 0, .px)
         .backgroundColor(CSSColor(r: color.rgb.r, g: color.rgb.g, b: color.rgb.b, a: color.alpha))
         
         let card = Div { colorCard }.backgroundColor(isLight ? .white : .white)
@@ -214,7 +292,6 @@ private class ColorCard: HTMLComponent {
                 .width(110)
                 .height(110)
                 .backgroundColor(color)
-                .margin(top: 0, right: isLight ? 0 : 50, bottom: 0, left: isLight ? 50 : 0, .px)
             }
             .backgroundColor(isLight ? .white : .white)
         super.init(card)
