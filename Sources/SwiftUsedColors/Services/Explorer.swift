@@ -21,9 +21,10 @@ struct ExploreResource {
 
 enum ExploreUsage {
     case xib(_ value: XibColorSet)
-    case rgb(red: Float, green: Float, blue: Float, alpha: Float, path: URL)
-    case grayGamma(white: Float, alpha: Float, path: URL)
+    case rgb(red: Float, green: Float, blue: Float, alpha: Float, path: URL, key: String?)
+    case grayGamma(white: Float, alpha: Float, path: URL, key: String?)
     case string(_ value: String, path: URL)
+    case named(_ name: String, path: URL)
     case regexp(_ pattern: String, path: URL)
     case rswift(_ identifier: String, path: URL)
     case system(_ name: String, alpha: Float, path: URL)
@@ -83,14 +84,40 @@ class Explorer {
         analyze()
     }
     
-    fileprivate func analyzeProjectColors() {
+    private func analyzeProjectColors() {
+        projectColors
+            .filter { $0.isUnused }
+            .forEach { unusedColor in
+                guard
+                    let path = unusedColor.usedInFiles?.first,
+                    let name = unusedColor.assetsFiles?.first
+                else {
+                    return
+                }
+                warn(path: path.description, "Color «\(name)» from Asset is not used")
+            }
+        
+        projectColors
+            .filter { $0.isDuplicate }
+            .forEach { dublicateColor in
+                guard let path = dublicateColor.assetsFiles?.first else {
+                    return
+                }
+                let assetNames = dublicateColor.assetsFiles?.compactMap {  "«\($0.lastComponent)»" }.joined(separator: ",") ?? ""
+                warn(path: path.description, "Color \(assetNames) is dublicates")
+            }
+        
         var dublicatedColorsCount = 0
         var singleUsageColorsCount = 0
+        var unusedColorsCount = 0
         var notAddedColorsToAssetCount = 0
         
         projectColors.forEach { color in
-            if let names = color.names, names.count > 1 {
+            if color.isDuplicate {
                 dublicatedColorsCount += 1
+            }
+            if color.isUnused {
+                unusedColorsCount += 1
             }
             if let files = color.usedInFiles {
                 if files.count == 1 {
@@ -102,21 +129,13 @@ class Explorer {
             }
         }
         
-        projectColors.filter { $0.isAsset && $0.names?.count == 1 && $0.usedInFiles?.count == 1 }
-            .forEach { unusedColor in
-                guard
-                    let path = unusedColor.usedInFiles?.first,
-                    let name = unusedColor.names?.first
-                else {
-                    return
-                }
-                warn(path: path.description, "Color «\(name)» from Asset is not used")
-            }
-        
         print("\n--------------")
         print("Unique colors in projects:".bold, projectColors.count)
         if dublicatedColorsCount > 0 {
             print("🤨 Duplicated colors:".bold.red, dublicatedColorsCount)
+        }
+        if unusedColorsCount > 0 {
+            print("🤨 Unused colors:".bold.red, unusedColorsCount)
         }
         if singleUsageColorsCount > 0 {
             print("🤨 Single use color:".bold.red, singleUsageColorsCount)
@@ -141,37 +160,44 @@ class Explorer {
             switch usage {
             case .regexp(let pattern, let url):
                 setColor(pattern, path: url)
-                print("Init color by name".blink, "\(pattern)".green)
+                
+            case .named(let pattern, let url):
+                setColor(pattern, path: url)
             
             case .rswift(let identifier, let url):
                 setColor(identifier, path: url)
-                print("R.swift:".blink, "\(identifier)".green)
             
             case .string(let value, let url):
                 setColor(value, path: url)
-                print("Value: ".blink, value)
                 
             case .xib(let color):
                 setXibColor(color)
-                print("Xib: ".blink, "\(color.name)".lightRed)
                 
-            case .rgb(let r, let g, let b,let a, let path):
+            case .rgb(let r, let g, let b,let a, let path, let key):
+                var keys: [String]?
+                if let key = key {
+                    keys = [key]
+                }
                 let color = ProjectColor(
                     colorRepresentation: .custom(color: .rgb(red: r, green: g, blue: b, alpha: a)),
                     names: nil,
-                    usedInFiles: [Path(path.absoluteString)]
+                    usedInFiles: [Path(path.absoluteString)],
+                    keys: keys
                 )
                 setProjectColor(color)
-                print("UIColor or Color rgb args: ".blink, "\(r), \(g), \(b), \(a)".red)
                 
-            case .grayGamma(let w, let a, let path):
+            case .grayGamma(let w, let a, let path, let key):
+                var keys: [String]?
+                if let key = key {
+                    keys = [key]
+                }
                 let color = ProjectColor(
                     colorRepresentation: .custom(color: .grayGamma(white: w, alpha: a)),
                     names: nil,
-                    usedInFiles: [Path(path.absoluteString)]
+                    usedInFiles: [Path(path.absoluteString)],
+                    keys: keys
                 )
                 setProjectColor(color)
-                print("UIColor or Color gray gamma args: ".blink, "\(w), \(a)".red)
                 
             case .system(let name, let alpha, let path):
                 let color = ProjectColor(
@@ -180,7 +206,6 @@ class Explorer {
                     usedInFiles: [Path(path.absoluteString)]
                 )
                 setProjectColor(color)
-                print("System: ".blink, name.green)
             }
         }
         print("Colors in assets: ".bold, exploredResources.count)

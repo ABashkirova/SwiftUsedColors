@@ -12,6 +12,7 @@ class FuncCallVisitor: SyntaxVisitor {
     private let register: ColorRegister
     private let url: URL
     private var name: String?
+    private var key: String?
     
     @discardableResult
     init(
@@ -32,7 +33,16 @@ class FuncCallVisitor: SyntaxVisitor {
         if (name == nil) {
             return
         }
-
+        
+        if let parentTokens = node.parent?.tokens {
+            let rawKey = parentTokens
+                .prefix(while: { $0.text != "UIColor" })
+                .map { $0.text }
+                .filter { !$0.contains("return") && $0 != "color" }
+                .joined()
+            key = !rawKey.isEmpty ? SwiftIdentifier(name: rawKey).description : nil
+        }
+        
         if (name == "UIColor") {
             if !uiKit && !bonMot {
                 warn(url: url, node: node, "UIColor used but UIKit not imported")
@@ -77,7 +87,7 @@ class FuncCallVisitor: SyntaxVisitor {
                     warn(url: url, node: namedTuple, "Too wide match \"\(regex)\" is generated for resource, please specify pattern")
                 }
                 
-                register(.regexp(regex, path: url))
+                register(.named(regex, path: url))
             }
         }
         else if (name == "Color") {
@@ -108,7 +118,7 @@ class FuncCallVisitor: SyntaxVisitor {
                 warn(url: url, node: tuple, "Too wide match \"\(regex)\" is generated for resource, please specify pattern")
             }
 
-            register(.regexp(regex, path: url))
+            register(.named(regex, path: url))
         }
     }
 
@@ -228,7 +238,6 @@ class FuncCallVisitor: SyntaxVisitor {
         return .skipChildren
     }
     
-    /// TODO: refactor need expression visitor
     private func uiColorRBGArguments(
         red: TupleExprElementListSyntax.Element,
         green: TupleExprElementListSyntax.Element,
@@ -248,16 +257,16 @@ class FuncCallVisitor: SyntaxVisitor {
                 let alphaRowValue = alpha.expression.as(FloatLiteralExprSyntax.self)?.floatingDigits.text,
                 let alphaValue = Float(alphaRowValue)
             {
-                register(.rgb(red: r / 255, green: g / 255, blue: b / 255, alpha: alphaValue, path: url))
+                register(.rgb(red: r / 255, green: g / 255, blue: b / 255, alpha: alphaValue, path: url, key: key))
             }
             else {
-                register(.rgb(red: r / 255, green: g / 255, blue: b / 255, alpha: 1, path: url))
+                register(.rgb(red: r / 255, green: g / 255, blue: b / 255, alpha: 1, path: url, key: key))
             }
             
             return
         }
         else {
-            print(red)
+            // TODO: refactor need expression visitor
         }
     }
     
@@ -272,7 +281,7 @@ class FuncCallVisitor: SyntaxVisitor {
             let alphaRawValue = alpha.expression.as(IntegerLiteralExprSyntax.self)?.digits.text,
             let alphaValue = Float(alphaRawValue)
         {
-            register(.grayGamma(white: whiteValue / 255, alpha: alphaValue, path: url))
+            register(.grayGamma(white: whiteValue / 255, alpha: alphaValue, path: url, key: key))
             return
         }
         
@@ -282,7 +291,7 @@ class FuncCallVisitor: SyntaxVisitor {
             let alphaRawValue = alpha.expression.as(FloatLiteralExprSyntax.self)?.floatingDigits.text,
             let alphaValue = Float(alphaRawValue)
         {
-            register(.grayGamma(white: whiteValue, alpha: alphaValue, path: url))
+            register(.grayGamma(white: whiteValue, alpha: alphaValue, path: url, key: key))
             return
         }
         if
@@ -291,7 +300,7 @@ class FuncCallVisitor: SyntaxVisitor {
             let alphaRawValue = alpha.expression.as(FloatLiteralExprSyntax.self)?.floatingDigits.text,
             let alphaValue = Float(alphaRawValue)
         {
-            register(.grayGamma(white: whiteValue / 255, alpha: alphaValue, path: url))
+            register(.grayGamma(white: whiteValue / 255, alpha: alphaValue, path: url, key: key))
             return
         }
         
@@ -301,7 +310,7 @@ class FuncCallVisitor: SyntaxVisitor {
             let alphaRawValue = alpha.expression.as(IntegerLiteralExprSyntax.self)?.digits.text,
             let alphaValue = Float(alphaRawValue)
         {
-            register(.grayGamma(white: whiteValue, alpha: alphaValue, path: url))
+            register(.grayGamma(white: whiteValue, alpha: alphaValue, path: url, key: key))
             return
         }
     }
