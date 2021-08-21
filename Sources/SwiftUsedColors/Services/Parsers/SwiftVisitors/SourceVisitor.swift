@@ -12,6 +12,7 @@ class SourceVisitor: SyntaxVisitor {
     private let url: URL
     private let register: ColorRegister
     private var hasUIKit = false
+    private var hasBonMot = false
     private var hasSwiftUI = false
     
     @discardableResult
@@ -28,6 +29,9 @@ class SourceVisitor: SyntaxVisitor {
         if (imp == "UIKit" || imp == "WatchKit") {
             hasUIKit = true
         }
+        if (imp == "BonMot") {
+            hasBonMot = true
+        }
         else if (imp == "SwiftUI") {
             hasSwiftUI = true
         }
@@ -36,7 +40,7 @@ class SourceVisitor: SyntaxVisitor {
     }
     
     override func visit(_ node: FunctionCallExprSyntax) -> SyntaxVisitorContinueKind {
-        FuncCallVisitor(url, node, register, uiKit: hasUIKit, swiftUI: hasSwiftUI)
+        FuncCallVisitor(url, node, register, uiKit: hasUIKit, bonMot: hasBonMot, swiftUI: hasSwiftUI)
 
         return super.visit(node)
     }

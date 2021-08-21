@@ -28,6 +28,12 @@ Just type `suc` under your project's path
 > suc
 ```
 
+or use with options
+
+```shell
+> suc -p <PATH OF XCODEPROJECT> -t <TARGET> -r <DIRECTORY FOR REPORT>
+```
+
 or
 
 ### Xcode integration
@@ -38,9 +44,9 @@ Add a "Run Script" phase to each target.
 "${PODS_ROOT}/SwiftUsedColors/suc"
 ```
 
-On every project build `suc` will throw warnings about unused colors.
+On every project build `suc` will throw warnings about unused colors and used colors on xibs but missed in `xcassets`.
 
 ## How it works
 
 `suc` finds colors included in the target, and then detects if they are used by the xibs, storyboards, and swift files.
-`suc` collects project's colors in the `colors.json` in the root directory of project
+`suc` collects project's colors in the `colors.html` in the directory for report specified in option `--report`.

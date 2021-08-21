@@ -60,11 +60,11 @@ class XibParser {
 private extension Color {
     var xibColor: XibColorSet.Color {
         switch self {
-        case .name(let name): return .named(name: name.name)
-        case .systemColor(let name): return .system(name: name.name)
-        case .calibratedRGB(let color): return .components(red: color.red, green: color.green, blue: color.blue, alpha: color.alpha)
-        case .sRGB(let color): return .components(red: color.red, green: color.green, blue: color.blue, alpha: color.alpha)
-        case .calibratedWhite(let color): return .grayGamma(white: color.white, alpha: color.alpha)
+        case .name(let name): return .named(name: name.name, key: key)
+        case .systemColor(let name): return .system(name: name.name, key: key)
+        case .calibratedRGB(let color): return .components(red: color.red, green: color.green, blue: color.blue, alpha: color.alpha, key: key)
+        case .sRGB(let color): return .components(red: color.red, green: color.green, blue: color.blue, alpha: color.alpha, key: key)
+        case .calibratedWhite(let color): return .grayGamma(white: color.white, alpha: color.alpha, key: key)
         }
     }
 }

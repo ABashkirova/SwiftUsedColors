@@ -18,6 +18,8 @@ struct ProjectColor: Codable {
     /// Files in which the color was used
     var usedInFiles: [Path]?
     
+    var keys: [String]?
+    
     /// Hex representation
     func hex(isLightMode: Bool) -> String? {
         colorRepresentation?.hex(isLightMode: isLightMode)

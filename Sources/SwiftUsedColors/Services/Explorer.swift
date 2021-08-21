@@ -102,6 +102,17 @@ class Explorer {
             }
         }
         
+        projectColors.filter { $0.isAsset && $0.names?.count == 1 && $0.usedInFiles?.count == 1 }
+            .forEach { unusedColor in
+                guard
+                    let path = unusedColor.usedInFiles?.first,
+                    let name = unusedColor.names?.first
+                else {
+                    return
+                }
+                warn(path: path.description, "Color «\(name)» from Asset is not used")
+            }
+        
         print("\n--------------")
         print("Unique colors in projects:".bold, projectColors.count)
         if dublicatedColorsCount > 0 {
@@ -287,13 +298,18 @@ class Explorer {
         if let projectColor = xibColor.projectColor {
             setProjectColor(projectColor)
         }
-        else if case .named(let name) = xibColor.color, let resource = findAssetColor(for: name) {
+        else if case .named(let name, _) = xibColor.color, let resource = findAssetColor(for: name) {
             var asset = resource.asset
             asset.path = xibColor.path
             setAsset(asset)
         }
         else {
-            print("Color from xib", xibColor.name, "not set to project colors collection")
+            var message: String = "The named color used is «" + xibColor.name + "»"
+            if let property = xibColor.key {
+                message += " in property " + property
+            }
+            message += ", but it is not in Asset"
+            warn(path: xibColor.path.description, message)
         }
     }
     
@@ -304,7 +320,7 @@ class Explorer {
             setAsset(asset)
         }
         else {
-            print("Color as rcolor", id, "not set to project colors collection (\(path.absoluteString))")
+            warn(path: path.path, "Used R.color.\(id) not found in Assets")
         }
     }
     
@@ -326,5 +342,13 @@ class Explorer {
         let resultHtml = reportPath + Path("colors.html")
         try? resultHtml.write(ProjectColorsPage(colors: projectColors.sorted(by: { $0.sortRelation(color: $1) })).render())
         print("colors.html:\n", resultHtml.absolute().string)
+    }
+    
+    private func warn(path: String, _ message: String) {
+        guard showWarnings else {
+            return
+        }
+
+        print("\(path.description): warning: \(message)")
     }
 }

@@ -14,7 +14,14 @@ class FuncCallVisitor: SyntaxVisitor {
     private var name: String?
     
     @discardableResult
-    init(_ url: URL, _ node: FunctionCallExprSyntax, _ register: @escaping ColorRegister, uiKit: Bool, swiftUI: Bool) {
+    init(
+        _ url: URL,
+        _ node: FunctionCallExprSyntax,
+        _ register: @escaping ColorRegister,
+        uiKit: Bool,
+        bonMot: Bool,
+        swiftUI: Bool
+    ) {
         self.register = register
         self.url = url
         
@@ -27,9 +34,8 @@ class FuncCallVisitor: SyntaxVisitor {
         }
 
         if (name == "UIColor") {
-            if (!uiKit) {
+            if !uiKit && !bonMot {
                 warn(url: url, node: node, "UIColor used but UIKit not imported")
-                return
             }
             
             if node.argumentList.contains(where: { $0.label?.text == "white" }) {
@@ -74,7 +80,10 @@ class FuncCallVisitor: SyntaxVisitor {
                 register(.regexp(regex, path: url))
             }
         }
-        else if (name == "Color" && swiftUI) {
+        else if (name == "Color") {
+            if (!swiftUI || !bonMot) {
+                warn(url: url, node: node, "Color used but SwiftUI not imported")
+            }
             if (node.argumentList.count != 1) {
                 return
             }
