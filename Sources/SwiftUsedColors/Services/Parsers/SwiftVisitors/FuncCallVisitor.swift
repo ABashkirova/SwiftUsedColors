@@ -249,9 +249,12 @@ class FuncCallVisitor: SyntaxVisitor {
             let r = Float(redRawValue),
             let greenRawValue = green.expression.as(IntegerLiteralExprSyntax.self)?.digits.text,
             let g = Float(greenRawValue),
-            let blueRawValue = green.expression.as(IntegerLiteralExprSyntax.self)?.digits.text,
+            let blueRawValue = blue.expression.as(IntegerLiteralExprSyntax.self)?.digits.text,
             let b = Float(blueRawValue)
         {
+            if url.absoluteString.contains("TabBar") {
+                print(url.absoluteString)
+            }
             if
                 let alpha = alpha,
                 let alphaRowValue = alpha.expression.as(FloatLiteralExprSyntax.self)?.floatingDigits.text,
