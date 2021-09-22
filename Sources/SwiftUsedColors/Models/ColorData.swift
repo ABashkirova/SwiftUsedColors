@@ -12,6 +12,7 @@ struct ColorData {
     var green: Double
     var blue: Double
     var alpha: Double
+    var raw: String?
     
     init(
         red: Double = 0.0,
@@ -58,7 +59,8 @@ extension ColorData {
             red: Float(red),
             green: Float(green),
             blue: Float(blue),
-            alpha: Float(alpha)
+            alpha: Float(alpha),
+            raw: raw
         )
     }
 }

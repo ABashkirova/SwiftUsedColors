@@ -11,21 +11,28 @@ extension ProjectColor {
     enum Color: Codable {
         typealias HSV = (hue: Float, saturation: Float, value: Float)
         
-        case rgb(red: Float, green: Float, blue: Float, alpha: Float)
-        case grayGamma(white: Float, alpha: Float)
+        case rgb(red: Float, green: Float, blue: Float, alpha: Float, raw: String?)
+        case grayGamma(white: Float, alpha: Float, raw: String?)
         
         var alpha: Double {
             switch self {
-            case .rgb(_, _, _, let alpha), .grayGamma(_, let alpha):
+            case .rgb(_, _, _, let alpha, _), .grayGamma(_, let alpha, _):
                 return Double(alpha)
+            }
+        }
+        
+        var raw: String? {
+            switch self {
+            case .rgb(_, _, _, _, let raw), .grayGamma(_, _, let raw):
+                return raw
             }
         }
         
         var rgb: (r: Float, g: Float, b: Float) {
             switch self {
-            case .grayGamma(let white, _):
+            case .grayGamma(let white, _, _):
                 return (r: white, g: white, b: white)
-            case .rgb(let red, let green, let blue, _):
+            case .rgb(let red, let green, let blue, _, _):
                 return (r: red, g: green, b: blue)
             }
         }

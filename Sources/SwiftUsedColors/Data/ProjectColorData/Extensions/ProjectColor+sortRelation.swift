@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ProjectColor+sortRelation.swift
 //  
 //
 //  Created by Alexandra Bashkirova on 02.08.2021.
@@ -8,7 +8,6 @@
 import Foundation
 
 extension ProjectColor {
-    
     func sortRelation(color: ProjectColor, countOfColorsCluster: Int = 1) -> Bool {
         guard let lColor = colorRepresentation else {
             return false
@@ -27,15 +26,15 @@ extension ProjectColor.ColorRepresentation {
             return lColor.sortRelation(color: rColor, countOfColorsCluster: countOfColorsCluster)
         
         case (.custom(let lColor), .asset(let rColor)):
-            let lAppereanceColor: ProjectColor.AppereanceColor = .any(color: lColor)
-            return lAppereanceColor.sortRelation(color: rColor, countOfColorsCluster: countOfColorsCluster)
+            let lAppearanceColor: ProjectColor.AppearanceColor = .any(color: lColor)
+            return lAppearanceColor.sortRelation(color: rColor, countOfColorsCluster: countOfColorsCluster)
         
         case (.asset(let lColor), .asset(let rColor)):
             return lColor.sortRelation(color: rColor, countOfColorsCluster: countOfColorsCluster)
         
         case (.asset(let lColor), .custom(let rColor)):
-            let rAppereanceColor: ProjectColor.AppereanceColor = .any(color: rColor)
-            return lColor.sortRelation(color: rAppereanceColor, countOfColorsCluster: countOfColorsCluster)
+            let rAppearanceColor: ProjectColor.AppearanceColor = .any(color: rColor)
+            return lColor.sortRelation(color: rAppearanceColor, countOfColorsCluster: countOfColorsCluster)
             
         case (.system(let lName, _), .system(let rName, _)):
             return rName > lName
@@ -48,8 +47,8 @@ extension ProjectColor.ColorRepresentation {
     }
 }
 
-extension ProjectColor.AppereanceColor {
-    func sortRelation(color: ProjectColor.AppereanceColor, countOfColorsCluster: Int = 1) -> Bool {
+extension ProjectColor.AppearanceColor {
+    func sortRelation(color: ProjectColor.AppearanceColor, countOfColorsCluster: Int = 1) -> Bool {
         switch (self, color) {
         case (.any(let lColor), .any(let rColor)):
             return lColor.sortRelation(color: rColor, countOfColorsCluster: countOfColorsCluster)

@@ -47,6 +47,15 @@ extension AssetColorData.Element.Color {
         case gray(white: String, alpha: String)
         case rgb(red: String, green: String, blue: String, alpha: String)
         
+        var raw: String {
+            switch self {
+            case .gray(let white, let alpha):
+                return "GrayGamma(white: \(white), \(alpha))"
+            case .rgb(let r, let g, let b, let a):
+                return "RGB(r: \(r), g: \(g), b: \(b), a: \(a))"
+            }
+        }
+        
         enum CodingKeys: String, CodingKey {
             case white
             case red

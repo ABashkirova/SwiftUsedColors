@@ -1,5 +1,5 @@
 //
-//  ProjectColor.AppereanceColor+Codable.swift
+//  ProjectColor.AppearanceColor+Codable.swift
 //  
 //
 //  Created by Alexandra Bashkirova on 30.07.2021.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension ProjectColor.AppereanceColor {
+extension ProjectColor.AppearanceColor {
     private enum CodingKeys: String, CodingKey {
         case any
         case anyDark

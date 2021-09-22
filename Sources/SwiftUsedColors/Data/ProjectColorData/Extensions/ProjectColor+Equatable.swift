@@ -13,7 +13,7 @@ extension ProjectColor.Color: Equatable {
         case (.rgb, .rgb):
             return lhs.hex == rhs.hex
        
-        case (.grayGamma(let lhsWhite, let lhsAlpha), .grayGamma(let rhsWhite, let rhsAlpha)):
+        case (.grayGamma(let lhsWhite, let lhsAlpha, _), .grayGamma(let rhsWhite, let rhsAlpha, _)):
             return abs(lhsWhite - rhsWhite) < Float.ulpOfOne && abs(lhsAlpha - rhsAlpha) < Float.ulpOfOne
        
         default:
@@ -23,8 +23,8 @@ extension ProjectColor.Color: Equatable {
     }
 }
 
-extension ProjectColor.AppereanceColor: Equatable {
-    static func == (lhs: ProjectColor.AppereanceColor, rhs: ProjectColor.AppereanceColor) -> Bool {
+extension ProjectColor.AppearanceColor: Equatable {
+    static func == (lhs: ProjectColor.AppearanceColor, rhs: ProjectColor.AppearanceColor) -> Bool {
         switch (lhs, rhs) {
         case (.any(let lhsColor), .any(let rhsColor)):
             return lhsColor == rhsColor

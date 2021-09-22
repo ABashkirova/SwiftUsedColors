@@ -16,7 +16,7 @@ let package = Package(
         .package(url: "https://github.com/IBDecodable/IBDecodable.git", from: "0.4.2"),
         .package(url: "https://github.com/onevcat/Rainbow.git", from: "3.2.0"),
         .package(name: "CommandLineKit", url: "https://github.com/benoit-pereira-da-silva/CommandLine.git", from: "4.0.9"),
-        .package(name: "SwiftSyntax", url: "https://github.com/apple/swift-syntax", from: "0.50300.0"),
+        .package(name: "SwiftSyntax", url: "https://github.com/apple/swift-syntax", .exact("0.50400.0")),
         .package(url: "https://github.com/johngarrett/HyperSwift", .branch("master")),
     ],
     targets: [

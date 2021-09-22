@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ProjectColor.swift
 //  
 //
 //  Created by Alexandra Bashkirova on 30.07.2021.
@@ -41,7 +41,7 @@ struct ProjectColor: Codable {
         return !isAsset && usedInFiles?.contains(where: { $0.extension == "xib" }) ?? false
     }
     
-    /// Color is unuses
+    /// Color is unused
     var isUnused: Bool {
         return isAsset && names?.count == 1 && usedInFiles?.count == 1
     }
@@ -60,7 +60,7 @@ struct ProjectColor: Codable {
         return colorRepresentation == color.colorRepresentation
     }
     
-    mutating func merge(dublicate color: ProjectColor) {
+    mutating func merge(duplicate color: ProjectColor) {
         guard equalColors(with: color) else {
             return
         }

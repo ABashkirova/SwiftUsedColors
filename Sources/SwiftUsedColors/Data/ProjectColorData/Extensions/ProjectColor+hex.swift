@@ -138,7 +138,7 @@ extension ProjectColor.ColorRepresentation {
 extension ProjectColor.Color {
     var hex: String? {
         switch self {
-        case .rgb(let red, let green, let blue, let alpha):
+        case .rgb(let red, let green, let blue, let alpha, _):
             return String(
                 format: "#%02X%02X%02X %.02f",
                 UInt8(red * 255),
@@ -147,7 +147,7 @@ extension ProjectColor.Color {
                 alpha
             )
             
-        case .grayGamma(let white, let alpha):
+        case .grayGamma(let white, let alpha, _):
             return String(
                 format: "#%02X%02X%02X %.02f",
                 UInt8(white * 255),

@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ColorSet.swift
 //  
 //
 //  Created by Alexandra Bashkirova on 30.07.2021.

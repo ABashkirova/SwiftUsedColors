@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  XibColorSet.swift
 //  
 //
 //  Created by Alexandra Bashkirova on 30.07.2021.
@@ -49,18 +49,17 @@ extension XibColorSet {
             keys = [key]
         }
         switch color {
-        case .components(let red, let green, let blue, let alpha, _):
-            
+        case .components(let red, let green, let blue, let alpha, let key):
             return ProjectColor(
-                colorRepresentation: .custom(color: .rgb(red: red, green: green, blue: blue, alpha: alpha)),
+                colorRepresentation: .custom(color: .rgb(red: red, green: green, blue: blue, alpha: alpha, raw: nil)),
                 names: [name],
                 usedInFiles: [path],
                 keys: keys
             )
             
-        case .grayGamma(let white, let alpha, _):
+        case .grayGamma(let white, let alpha, let key):
             return ProjectColor(
-                colorRepresentation: .custom(color: .grayGamma(white: white, alpha: alpha)),
+                colorRepresentation: .custom(color: .grayGamma(white: white, alpha: alpha, raw: nil)),
                 names: [name],
                 usedInFiles: [path],
                 keys: keys

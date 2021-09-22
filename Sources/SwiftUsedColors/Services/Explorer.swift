@@ -40,6 +40,11 @@ class Explorer {
     private var exploredUsages: [ExploreUsage] = []
     private var projectColors: [ProjectColor] = []
     
+    private var duplicatedColorsCount = 0
+    private var singleUsageColorsCount = 0
+    private var unusedColorsCount = 0
+    private var notAddedColorsToAssetCount = 0
+    
     init(
         projectPath: Path,
         sourceRoot: Path,
@@ -64,7 +69,7 @@ class Explorer {
                 try explore(target: target)
             }
         }
-        analyzeProjectColors()
+        analyseProjectColors()
         writeUsedColors()
         print("🦒 Complete".bold)
     }
@@ -81,10 +86,10 @@ class Explorer {
             try explore(sources: sources)
         }
         
-        analyze()
+        analyse()
     }
     
-    private func analyzeProjectColors() {
+    private func analyseProjectColors() {
         projectColors
             .filter { $0.isUnused }
             .forEach { unusedColor in
@@ -99,22 +104,17 @@ class Explorer {
         
         projectColors
             .filter { $0.isDuplicate }
-            .forEach { dublicateColor in
-                guard let path = dublicateColor.assetsFiles?.first else {
+            .forEach { duplicateColor in
+                guard let path = duplicateColor.assetsFiles?.first else {
                     return
                 }
-                let assetNames = dublicateColor.assetsFiles?.compactMap {  "«\($0.lastComponent)»" }.joined(separator: ",") ?? ""
+                let assetNames = duplicateColor.assetsFiles?.compactMap {  "«\($0.lastComponent)»" }.joined(separator: ",") ?? ""
                 warn(path: path.description, "Color \(assetNames) is dublicates")
             }
         
-        var dublicatedColorsCount = 0
-        var singleUsageColorsCount = 0
-        var unusedColorsCount = 0
-        var notAddedColorsToAssetCount = 0
-        
         projectColors.forEach { color in
             if color.isDuplicate {
-                dublicatedColorsCount += 1
+                duplicatedColorsCount += 1
             }
             if color.isUnused {
                 unusedColorsCount += 1
@@ -130,22 +130,22 @@ class Explorer {
         }
         
         print("\n--------------")
-        print("Unique colors in projects:".bold, projectColors.count)
-        if dublicatedColorsCount > 0 {
-            print("🤨 Duplicated colors:".bold.red, dublicatedColorsCount)
+        print("Unique colors in project:".bold, projectColors.count)
+        if duplicatedColorsCount > 0 {
+            print("🤨 Repeating colors:".bold.red, duplicatedColorsCount)
         }
         if unusedColorsCount > 0 {
             print("🤨 Unused colors:".bold.red, unusedColorsCount)
         }
         if singleUsageColorsCount > 0 {
-            print("🤨 Single use color:".bold.red, singleUsageColorsCount)
+            print("🤨 Colors used once:".bold.red, singleUsageColorsCount)
         }
         if notAddedColorsToAssetCount > 0 {
-            print("🤨 Color not added to asset:".bold.red, notAddedColorsToAssetCount)
+            print("🤨 Colors not added to asset:".bold.red, notAddedColorsToAssetCount)
         }
     }
     
-    private func analyze() {
+    private func analyse() {
         print("🎨 – Assets colors:")
         exploredResources.forEach { resource in
             let defaultColorHex: String = resource.asset.colors[.default]?.hexName ?? ""
@@ -179,7 +179,7 @@ class Explorer {
                     keys = [key]
                 }
                 let color = ProjectColor(
-                    colorRepresentation: .custom(color: .rgb(red: r, green: g, blue: b, alpha: a)),
+                    colorRepresentation: .custom(color: .rgb(red: r, green: g, blue: b, alpha: a, raw: nil)),
                     names: nil,
                     usedInFiles: [Path(path.absoluteString)],
                     keys: keys
@@ -192,7 +192,7 @@ class Explorer {
                     keys = [key]
                 }
                 let color = ProjectColor(
-                    colorRepresentation: .custom(color: .grayGamma(white: w, alpha: a)),
+                    colorRepresentation: .custom(color: .grayGamma(white: w, alpha: a, raw: nil)),
                     names: nil,
                     usedInFiles: [Path(path.absoluteString)],
                     keys: keys
@@ -304,7 +304,7 @@ class Explorer {
     private func setProjectColor(_ newColor: ProjectColor) {
         if let existColorIndex = projectColors.firstIndex(where: { $0.equalColors(with: newColor) }) {
             var existColor = projectColors[existColorIndex]
-            existColor.merge(dublicate: newColor)
+            existColor.merge(duplicate: newColor)
             projectColors[existColorIndex] = existColor
         }
         else {
@@ -365,7 +365,16 @@ class Explorer {
             return
         }
         let resultHtml = reportPath + Path("colors.html")
-        try? resultHtml.write(ProjectColorsPage(colors: projectColors.sorted(by: { $0.sortRelation(color: $1) })).render())
+        try? resultHtml.write(
+            ProjectColorsPage(
+                colors: projectColors.sorted(by: { $0.sortRelation(color: $1) }),
+                duplicatedColorsCount: duplicatedColorsCount,
+                singleUsageColorsCount: singleUsageColorsCount,
+                unusedColorsCount: unusedColorsCount,
+                notAddedColorsToAssetCount: notAddedColorsToAssetCount
+            )
+            .render()
+        )
         print("colors.html:\n", resultHtml.absolute().string)
     }
     

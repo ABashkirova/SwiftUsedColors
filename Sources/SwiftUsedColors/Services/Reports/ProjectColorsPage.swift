@@ -9,8 +9,22 @@ class ProjectColorsPage {
     private let title: String
     private let head: Head
     private let colors: [ProjectColor]
+    private var duplicatedColorsCount: Int
+    private var singleUsageColorsCount: Int
+    private var unusedColorsCount: Int
+    private var notAddedColorsToAssetCount: Int
     
-    init(colors: [ProjectColor]) {
+    init(
+        colors: [ProjectColor],
+        duplicatedColorsCount: Int,
+        singleUsageColorsCount: Int,
+        unusedColorsCount: Int,
+        notAddedColorsToAssetCount: Int
+    ) {
+        self.duplicatedColorsCount = duplicatedColorsCount
+        self.singleUsageColorsCount = singleUsageColorsCount
+        self.unusedColorsCount = unusedColorsCount
+        self.notAddedColorsToAssetCount = notAddedColorsToAssetCount
         let title = "Project Colors"
         self.title = title
         self.head = Head(title: title)
@@ -18,14 +32,14 @@ class ProjectColorsPage {
     }
     
     func render() -> String {
-        let body = Div("container") {
-            Div("row row-cols-1") {
-                colors.map { color in
-                    Div("col") {
-                        color.infoCard
-                    }
-                }
+        let colorsCards: [HTMLComponent] = colors.map { color in
+            Div("col") {
+                color.infoCard
             }
+        }
+        let bodyCards = [headerOfContent] + colorsCards
+        let body = Div("container") {
+            Div("row row-cols-1", id: nil, attributes: [:]) { bodyCards }
         }
         .display(.grid)
         .overflow(.scroll)
@@ -39,6 +53,33 @@ class ProjectColorsPage {
            </body>
         </html>
         """
+    }
+    
+    var headerOfContent: HTMLComponent {
+        var messagesComponents: [HTMLComponent] = []
+        if colors.count > 0 {
+            messagesComponents.append(Paragraph(cssClass: "card=text", "Unique colors in project: \(colors.count)"))
+        }
+        if duplicatedColorsCount > 0 {
+            messagesComponents.append(Paragraph(cssClass: "card-text", "🤨 Repeating colors: \(duplicatedColorsCount)"))
+        }
+        if unusedColorsCount > 0 {
+            messagesComponents.append(Paragraph(cssClass: "card-text", "🤨 Unused colors: \(unusedColorsCount)"))
+        }
+        if singleUsageColorsCount > 0 {
+            messagesComponents.append(Paragraph(cssClass: "card-text", "🤨 Colors used once: \(singleUsageColorsCount)"))
+        }
+        if notAddedColorsToAssetCount > 0 {
+            messagesComponents.append(Paragraph(cssClass: "card-text", "🤨 Colors not added to asset: \(notAddedColorsToAssetCount)"))
+        }
+        messagesComponents.append(Paragraph(cssClass: "card-text", "Date: \(Date())"))
+        return Div("col", id: nil, attributes: [:]) {
+            Div("card mb-4  align-self-center") {
+                Div("row g-0 card-body", id: nil, attributes: [:]) {
+                    messagesComponents
+                }
+            }
+        }
     }
 }
 
@@ -76,7 +117,7 @@ private extension ProjectColor {
     }
     
     private var badgesBlock: HTMLElement {
-        let badges: [HTMLElement] = [assetBadge, unusedBadge, xibBadge, codeBadge, dublicateBadge].compactMap { $0 }
+        let badges: [HTMLElement] = [assetBadge, unusedBadge, xibBadge, codeBadge, duplicateBadge].compactMap { $0 }
         return Div(cssClass: "col-md-1 align-self-center", children: badges)
     }
     
@@ -85,7 +126,8 @@ private extension ProjectColor {
             Div(cssClass: "card-body", id: nil, attributes: [:], children: [
                 Header(.h6, text: "Names:", cssClass: "card-title", attributes: [:]),
                 namesComponent,
-                keysComponent
+                keysComponent,
+                metaInfo
             ].compactMap { $0 })
         }
     }
@@ -131,6 +173,19 @@ private extension ProjectColor {
         return keysComponent
     }
     
+    private var metaInfo: HTMLComponent? {
+        var metaComponent: HTMLComponent?
+        if let raw = colorRepresentation?.raw {
+            metaComponent = Div {
+                Header(.h6, text: "Meta:", cssClass: "card-title", attributes: [:])
+                Paragraph("card-text") {
+                    Small { raw }
+                }
+            }
+        }
+        return metaComponent
+    }
+    
     private var filesComponent: HTMLComponent {
         let filesComponent: HTMLComponent
         if let usedInFiles = usedInFiles, !usedInFiles.isEmpty {
@@ -172,11 +227,11 @@ private extension ProjectColor {
         return ColorBadge("In Code", type: .warning).element
     }
     
-    private var dublicateBadge: HTMLElement? {
+    private var duplicateBadge: HTMLElement? {
         guard isDuplicate else {
             return nil
         }
-        return ColorBadge("Dublicate", type: .danger).element
+        return ColorBadge("Duplicate", type: .danger).element
     }
 }
 
@@ -195,20 +250,20 @@ private class ColorBadge {
 }
 
 private extension ProjectColor.ColorRepresentation {
-    var colorsCard: AppereanceColorCard {
+    var colorsCard: AppearanceColorCard {
         switch self {
         case .asset(let color):
-            return AppereanceColorCard(color: color)
+            return AppearanceColorCard(color: color)
         
         case .custom(let color):
-            return AppereanceColorCard(
+            return AppearanceColorCard(
                 colorCards: [
                     ColorCard(color: color, isLight: true),
                     ColorCard(color: color, isLight: false)
                 ]
             )
         case .system(let name, let alpha):
-            return AppereanceColorCard(
+            return AppearanceColorCard(
                 colorCards: [
                     ColorCard(system: name, hex: hex(isLightMode: true), alpha: alpha, isLight: true),
                     ColorCard(system: name, hex: hex(isLightMode: false), alpha: alpha,  isLight: false)
@@ -218,8 +273,8 @@ private extension ProjectColor.ColorRepresentation {
     }
 }
 
-private class AppereanceColorCard: HTMLComponent {
-    init(color: ProjectColor.AppereanceColor) {
+private class AppearanceColorCard: HTMLComponent {
+    init(color: ProjectColor.AppearanceColor) {
         let colorCard =
             Div("card-group") {
                 color.colorCards
@@ -236,7 +291,7 @@ private class AppereanceColorCard: HTMLComponent {
     }
 }
 
-private extension ProjectColor.AppereanceColor {
+private extension ProjectColor.AppearanceColor {
     var colorCards: [ColorCard] {
         switch self {
         case .any(let color):

@@ -26,7 +26,7 @@ extension ProjectColor.ColorRepresentation {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
        
-        if let asset = try? container.decode(ProjectColor.AppereanceColor.self, forKey: .asset) {
+        if let asset = try? container.decode(ProjectColor.AppearanceColor.self, forKey: .asset) {
             self = .asset(color: asset)
         }
         else if let custom = try? container.decode(Custom.self, forKey: .custom) {

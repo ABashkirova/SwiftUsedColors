@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  CSSColor+floatRGB.swift
 //  
 //
 //  Created by Alexandra Bashkirova on 05.08.2021.
